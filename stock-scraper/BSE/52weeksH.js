@@ -6,11 +6,11 @@ async function scrapeStockData() {
   const page = await browser.newPage();
 
   // Step 2: Go to the target URL
-  await page.goto('https://www.bseindia.com/markets/equity/EQReports/mktwatchR.html?filter=gainer*all$all$');
+  await page.goto('https://www.bseindia.com/markets/equity/EQReports/HighLow.html?Flag=H');
   // Step 3: Fill in the form fields
-  await page.select('select#form-control.ng-pristine.ng-valid.ng-not-empty.ng-touched', 'AllMkt');
+  await page.select('select#form-control.ng-valid.ng-not-empty.ng-touched.ng-dirty .ng-valid-parse', '00');
   
-  await page.select('select#form-control.ng-pristine.ng-untouched.ng-valid.ng-not-empty', 'all');
+  await page.select('select#HLEQddl', '1');
   // Adjust the selector based on the form element ID or class
   // Step 4: Submit the form
   await page.click('button#btn.btn-default');  // Adjust this to target the form's submit button
