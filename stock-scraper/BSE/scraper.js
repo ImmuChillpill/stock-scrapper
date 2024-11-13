@@ -1,59 +1,33 @@
-// Import Puppeteer library
-const puppeteer = require('puppeteer');
+const axios = require('axios');
 
-// Function to scrape stock data
-async function scrapeStockData() {
-  // Launch browser instance
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
+const segment = "Equity"
+const status = "Active"
 
-  try {
-    // Navigate to the BSE webpage with specific options
-    await page.goto('https://www.bseindia.com/corporates/List_Scrips.html', { waitUntil: 'networkidle2', timeout: 60000 });
+let config = {
 
-    // Set segment and status filters
-    await page.select('select#ddlsegment', 'Equity');
-    await page.select('select#ddlstatus', 'Active');
-
-    // Click submit and wait for navigation to complete
-    await Promise.all([
-      page.click('#btnSubmit'),
-      page.waitForNavigation({ waitUntil: 'networkidle2' }),
-    ]);
-
-    // Wait additional time to ensure content loads
-    await page.waitForTimeout(5000);
-
-    // Check if rows in table are present
-    const rows = await page.$$('table.mGrid tbody tr');
-    console.log(`Number of rows found: ${rows.length}`);
-
-    // Extract data if rows are available
-    if (rows.length > 0) {
-      const stockData = await page.evaluate(() => {
-        return Array.from(document.querySelectorAll('table.mGrid tbody tr')).map(row => {
-          const columns = row.querySelectorAll('td');
-          return {
-            companyName: columns[0]?.innerText.trim() || 'N/A',
-            stockPrice: columns[1]?.innerText.trim() || 'N/A',
-            volume: columns[2]?.innerText.trim() || 'N/A',
-          };
-        });
-      });
-
-      // Log the extracted stock data in a readable format
-      console.table(stockData); // Display data in table format for better readability
-    } else {
-      console.log("No data rows found. The selector might be incorrect or data hasn't loaded yet.");
-    }
-
-  } catch (error) {
-    console.error("Error during scraping:", error);
-  } finally {
-    // Ensure the browser is closed even if an error occurs
-    await browser.close();
+  method: 'get',
+  maxBodyLength: Infinity,
+  url: `https://api.bseindia.com/BseIndiaAPI/api/ListofScripData/w?Group=&Scripcode=&industry=&segment=${segment}&status=${status}`,
+  headers: { 
+    'accept': 'application/json, text/plain, */*', 
+    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8,ta;q=0.7', 
+    'origin': 'https://www.bseindia.com', 
+    'priority': 'u=1, i', 
+    'referer': 'https://www.bseindia.com/', 
+    'sec-ch-ua': '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"', 
+    'sec-ch-ua-mobile': '?0', 
+    'sec-ch-ua-platform': '"Windows"', 
+    'sec-fetch-dest': 'empty', 
+    'sec-fetch-mode': 'cors', 
+    'sec-fetch-site': 'same-site', 
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
   }
-}
+};
 
-// Start the scrapeStockData function
-scrapeStockData().catch(console.error);
+axios.request(config)
+.then((response) => {
+  console.log(JSON.stringify(response.data));
+})
+.catch((error) => {
+  console.log(error);
+});

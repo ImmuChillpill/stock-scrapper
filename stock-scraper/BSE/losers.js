@@ -1,39 +1,29 @@
-const puppeteer = require('puppeteer');
+const axios = require('axios');
 
-async function scrapeStockData() {
-  // Step 1: Launch the browser
-  const browser = await puppeteer.launch({ headless: false });  // Set headless: true to run without opening a browser window
-  const page = await browser.newPage();
+let config = {
+  method: 'get',
+  maxBodyLength: Infinity,
+  url: 'https://api.bseindia.com/BseIndiaAPI/api/MktRGainerLoserDataeqto/w?GLtype=loser&IndxGrp=AllMkt&IndxGrpval=AllMkt&orderby=all',
+  headers: { 
+    'accept': 'application/json, text/plain, */*', 
+    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8,ta;q=0.7', 
+    'origin': 'https://www.bseindia.com', 
+    'priority': 'u=1, i', 
+    'referer': 'https://www.bseindia.com/', 
+    'sec-ch-ua': '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"', 
+    'sec-ch-ua-mobile': '?0', 
+    'sec-ch-ua-platform': '"Windows"', 
+    'sec-fetch-dest': 'empty', 
+    'sec-fetch-mode': 'cors', 
+    'sec-fetch-site': 'same-site', 
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+  }
+};
 
-  // Step 2: Go to the target URL
-  await page.goto('https://www.bseindia.com/markets/equity/EQReports/mktwatchR.html?filter=loser*all$all$');
-
-  // Step 3: Fill in the form fields
-  await page.select('select#form-control.ng-pristine.ng-valid.ng-not-empty.ng-touched', 'AllMkt');  // Adjust the selector based on the form element ID or class
-  await page.select('select#form-control.ng-pristine.ng-untouched.ng-valid.ng-not-empty','all');
-  // Step 4: Submit the form
-  await page.click('button#btn.btn-default');  // Adjust this to target the form's submit button
-  
-  // Wait for the results to load (you may need to adjust the selector or use waitForTimeout)
-  await page.waitForSelector('table.col-lg-12.largetable');
-
-  // Step 5: Scrape the table data
-  const stockData = await page.evaluate(() => {
-    const rows = Array.from(document.querySelectorAll('table.col-lg-12.largetable tbody tr'));  // Adjust selector as needed
-    return rows.map(row => {
-      const columns = row.querySelectorAll('td');
-      return {
-        companyName: columns[0]?.innerText.trim(),
-        stockPrice: columns[1]?.innerText.trim(),
-        volume: columns[2]?.innerText.trim(),
-      };
-    });
-  });
-
-  console.log(stockData);
-
-  // Step 6: Close the browser
-  await browser.close();
-}
-
-scrapeStockData().catch(console.error);
+axios.request(config)
+.then((response) => {
+  console.log(JSON.stringify(response.data));
+})
+.catch((error) => {
+  console.log(error);
+});
